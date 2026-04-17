@@ -1,0 +1,33 @@
+# Terraform
+**/.terraform/*
+* dev.tfstate
+* dev.tfstate.*
+crash.log
+crash.*.log
+
+# Terraform variable files that may contain secrets
+*dev.tfvars
+*dev.tfvars.json
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform plan files
+*.tfplan
+*.plan
+
+# CLI config / local files
+.terraformrc
+terraform.rc
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
