@@ -9,9 +9,10 @@ terraform {
 
 terraform {
   backend "s3" {
-    bucket = "ecs-threat-composer-bucket"
-    key    = "terraform.tfstate"
-    region = "eu-west-2"
+    bucket       = "ecs-threat-composer-bucket"
+    key          = "terraform.tfstate"
+    region       = "eu-west-2"
+    use_lockfile = true
   }
 }
 

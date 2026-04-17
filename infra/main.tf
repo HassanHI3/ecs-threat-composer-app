@@ -300,10 +300,10 @@ resource "aws_lb_target_group" "threatmod_target_group" {
 
 resource "aws_lb_listener" "threatmod_alb_listener_for_target_group" {
   load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = var.certificate_arn
+  port              = "80"
+  protocol          = "HTTP"
+  # ssl_policy        = "ELBSecurityPolicy-2016-08"
+  # certificate_arn   = var.certificate_arn
 
   default_action {
     type             = "forward"
@@ -314,26 +314,26 @@ resource "aws_lb_listener" "threatmod_alb_listener_for_target_group" {
   }
 }
 
-resource "aws_lb_listener" "threatmod_alb_listener_for_redirect_http_to_https" {
-  load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
-  port              = "80"
-  protocol          = "HTTP"
+# resource "aws_lb_listener" "threatmod_alb_listener_for_redirect_http_to_https" {
+#   load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
+#   port              = "80"
+#   protocol          = "HTTP"
 
-  default_action {
-    type            = "redirect"
+#   default_action {
+#     type = "redirect"
 
-    redirect {
-      port       = "443"
-      protocol   = "HTTPS"
-      status_code = "HTTP_301"
-      # this means that it permanently redirects the http to https and browser will cache it for next time
-    }
-  }
+#     redirect {
+#       port        = "443"
+#       protocol    = "HTTPS"
+#       status_code = "HTTP_301"
+#       # this means that it permanently redirects the http to https and browser will cache it for next time
+#     }
+#   }
 
-  tags = {
-    Name = "threatmod-alb-listener-redirect-to-https"
-  }
-}
+#   tags = {
+#     Name = "threatmod-alb-listener-redirect-to-https"
+#   }
+# }
 
 resource "aws_ecr_repository" "ecs_threat_composer_app" {
   name                 = "ecs-threat-composer-app"
@@ -367,7 +367,32 @@ resource "aws_cloudwatch_log_group" "threatmod_task_log_group" {
     Environment = var.environment
   }
 }
+resource "aws_appautoscaling_target" "ecs_service_scaling" {
+  max_capacity = 4
+  min_capacity = 2
 
+  resource_id        = "service/${aws_ecs_cluster.threatmod_cluster.name}/${aws_ecs_service.threatmod_cluster_service.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "ecs_cpu_policy" {
+  name        = "ecs-cpu-target-tracking"
+  policy_type = "TargetTrackingScaling"
+
+  resource_id        = aws_appautoscaling_target.ecs_service_scaling.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service_scaling.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service_scaling.service_namespace
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    target_value       = 70 # keep CPU around 70% but if it reaches above then scaling will be triggered
+    scale_in_cooldown  = 120
+    scale_out_cooldown = 60
+  }
+}
 resource "aws_ecs_task_definition" "threatmod_app_task" {
   family                   = "threatmod-app-task"
   requires_compatibilities = ["FARGATE"]
@@ -380,7 +405,7 @@ resource "aws_ecs_task_definition" "threatmod_app_task" {
   container_definitions = jsonencode([
     {
       name      = "threatmod-app-container-serverless"
-      image     = var.container_image
+      image     = "891377356090.dkr.ecr.eu-west-2.amazonaws.com/ecs-threat-composer-app:v2"
       essential = true
 
       portMappings = [
@@ -396,7 +421,7 @@ resource "aws_ecs_task_definition" "threatmod_app_task" {
         logDriver = "awslogs"
         options = {
           awslogs-group         = "/ecs/threatmod-task"
-          awslogs-region        = var.aws_region
+          awslogs-region        = "eu-west-2"
           awslogs-stream-prefix = "ecs"
         }
       }
@@ -408,7 +433,6 @@ resource "aws_ecs_task_definition" "threatmod_app_task" {
     cpu_architecture        = "X86_64"
   }
 }
-
 resource "aws_ecs_service" "threatmod_cluster_service" {
   name             = "threatmod-cluster-service"
   cluster          = aws_ecs_cluster.threatmod_cluster.id
@@ -441,7 +465,10 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
 
   force_new_deployment = true
 
-  depends_on = [aws_lb_listener.threatmod_alb_listener_for_target_group]
+  depends_on = [
+    aws_lb_listener.threatmod_alb_listener_for_target_group,
+    # aws_lb_listener.threatmod_alb_listener_for_redirect_http_to_https
+  ]
 
   network_configuration {
     subnets          = [aws_subnet.ecs_private_subnet_a.id, aws_subnet.ecs_private_subnet_b.id]
@@ -455,22 +482,13 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
     container_port   = 3003
   }
 }
-
 resource "aws_route53_zone" "main" {
-  name    = "threatmodapp.com"
-  #dns zone is public as we want to route traffic from the internet to our ALB
+  name = "threatmodapp.com"
 }
-
-#ACM proves ownership of domain
-# DNS for ALB put in as a CNAME in cloudflare for threatmodapp.com
-# and then route 53 will route traffic to the ALB which will route to the ECS tasks
-
 resource "aws_route53_record" "threatmod_app" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "tm.threatmodapp.com"
-# route 53 record for a subdomain for the dns for the ALB - routing traffic to ALB and then to the ECS tasks
   type    = "A"
-
   alias {
     name                   = aws_lb.threatmod_application_load_balancer.dns_name
     zone_id                = aws_lb.threatmod_application_load_balancer.zone_id

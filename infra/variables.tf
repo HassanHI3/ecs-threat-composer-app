@@ -4,12 +4,12 @@ variable "aws_region" {
 }
 
 variable "az_a" {
-  description = "eu-west-2a availability zone"
+  description = "Primary availability zone"
   type        = string
 }
 
 variable "az_b" {
-  description = "eu-west-2b availability zone"
+  description = "Secondary availability zone"
   type        = string
 }
 
