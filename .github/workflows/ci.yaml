@@ -26,41 +26,46 @@ env:
   ECS_TASK_DEFINITION: .aws/task-definition.json  # Task definition file path
   CONTAINER_NAME: threatmod-app-container-serverless  # Name of the container in the task definition
 
-steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+jobs:
+  build-and-push:
+    name: Build, Scan & Push
+    runs-on: ubuntu-latest
 
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+    steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
 
-      - name: Scan image with Grype
-        uses: anchore/scan-action@v6
-        with:
-          image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
-          fail-build: "true"
-          severity-cutoff: high
-          output-format: table
+          - name: Build Docker image
+            run: |
+              docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
 
-      - name: Login to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
+          - name: Scan image with Grype
+            uses: anchore/scan-action@v6
+            with:
+              image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+              fail-build: "true"
+              severity-cutoff: high
+              output-format: table
 
-      - name: Tag and push image to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-        run: |
-          docker tag ${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
-            $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          - name: Login to Amazon ECR
+            id: ecr-login
+            uses: aws-actions/amazon-ecr-login@v2
 
-          docker tag ${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
-            $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+          - name: Tag and push image to ECR
+            env:
+              ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+            run: |
+              docker tag ${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+                $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
-          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+              docker tag ${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+                $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
-          echo "### Image pushed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+              docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+              docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+
+              echo "### Image pushed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+              echo "**Image:** \`$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
 
 
 
