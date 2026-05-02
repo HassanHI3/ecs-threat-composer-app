@@ -37,7 +37,7 @@ jobs:
 
           - name: Build Docker image
             run: |
-              docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+              docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} ./app
 
           - name: Scan image with Grype
             uses: anchore/scan-action@v6
