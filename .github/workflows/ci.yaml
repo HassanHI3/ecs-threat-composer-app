@@ -1,0 +1,126 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write   # Required for OIDC authentication with AWS
+  contents: read    # Required for actions/checkout
+
+env:
+  AWS_REGION: eu-west-2                      # AWS region
+  ECR_REPOSITORY: ecs-threat-composer-app     # Your ECR repository
+  ECS_SERVICE: threatmod-cluster-service       # Your ECS service name
+  ECS_CLUSTER: threatmod-cluster-main       # Your ECS cluster name
+  ECS_TASK_DEFINITION: .aws/task-definition.json  # Task definition file path
+  CONTAINER_NAME: threatmod-app-container-serverless  # Name of the container in the task definition
+
+steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+
+      - name: Scan image with Grype
+        uses: anchore/scan-action@v6
+        with:
+          image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          fail-build: "true"
+          severity-cutoff: high
+          output-format: table
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          docker tag ${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+            $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+          docker tag ${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+            $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+
+          echo "### Image pushed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         node-version: [14, 16, 18]
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v6
+
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: ${{ matrix.node-version }}
+
+#       - name: Run linters
+#         uses: wearerequired/lint-action@v2
+#         with:
+#           eslint: true
+#           prettier: true
+
+#       - name: Install dependencies and run tests
+#         run: |
+#           npm install
+#           npm run build --if-present
+#           npm lint
+#           npm test
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
+
+#       - name: Set up QEMU
+#         uses: docker/setup-qemu-action@v4
+
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
+
+#       - name: Build, tag, and push image to ECR
+#         id: build-image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+

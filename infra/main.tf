@@ -335,15 +335,29 @@ resource "aws_lb_listener" "threatmod_alb_listener_for_target_group" {
 #   }
 # }
 
+
 resource "aws_ecr_repository" "ecs_threat_composer_app" {
-  name                 = "ecs-threat-composer-app"
+  name                 = var.ECR_REPOSITORY
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
 }
+resource "aws_secretsmanager_secret" "my_secret" {
+  name = "my-app-credentials"
+}
 
+resource "aws_secretsmanager_secret_version" "my_secret_version" {
+  secret_id     = aws_secretsmanager_secret.my_secret.id
+  secret_string = jsonencode({
+    AWS_ACCESS_KEY_ID     = var.AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY,
+    ECR_REGISTRY          = var.ECR_REGISTRY,
+    ECR_REPOSITORY        = var.ECR_REPOSITORY,
+    IMAGE_URI             = "${var.ECR_REGISTRY}/${var.ECR_REPOSITORY}:${var.container_image_tag}"
+  })
+}
 resource "aws_ecs_cluster" "threatmod_cluster" {
   name = "threatmod-cluster-main"
 
@@ -405,7 +419,7 @@ resource "aws_ecs_task_definition" "threatmod_app_task" {
   container_definitions = jsonencode([
     {
       name      = "threatmod-app-container-serverless"
-      image     = "891377356090.dkr.ecr.eu-west-2.amazonaws.com/ecs-threat-composer-app:v2"
+      image     = "${var.ECR_REGISTRY}/${var.ECR_REPOSITORY}:${var.container_image_tag}"
       essential = true
 
       portMappings = [

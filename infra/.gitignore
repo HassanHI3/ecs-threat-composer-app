@@ -4,6 +4,8 @@
 * dev.tfstate.*
 crash.log
 crash.*.log
+terraform.tfvars
+terraform.tfvars.json
 
 # Terraform variable files that may contain secrets
 *dev.tfvars
