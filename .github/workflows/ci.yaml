@@ -39,9 +39,14 @@ jobs:
             run: echo "GitHub SHA:${{ github.sha }}"
 
           - name: Build Docker image
+            id: build-image
             run: |
               docker build -t ${{ secrets.ECR_REPOSITORY }}:sha-${{ github.sha }} ./app
-              echo "::set-output name=image::${{ steps.build-image.outputs.image }}"
+              echo "::set-output name=image::${{ secrets.ECR_REPOSITORY }}:sha-${{ github.sha }}"
+
+          - name: Use image output
+            run: |
+              echo "The built image is ${{ steps.build-image.outputs.image }}"
 
           # - name: Scan image with Grype
           #   uses: anchore/scan-action@v6
