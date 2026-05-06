@@ -35,9 +35,12 @@ jobs:
           - name: Checkout code
             uses: actions/checkout@v4
 
+          - name: Debug SHA
+            run: echo "GitHub SHA: ${{ github.sha }}"
+
           - name: Build Docker image
             run: |
-              docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} ./app
+              docker build -t ${{env.ECR_REPOSITORY }}:${{ github.sha }} ./app
 
           # - name: Scan image with Grype
           #   uses: anchore/scan-action@v6
