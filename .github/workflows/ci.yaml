@@ -40,7 +40,7 @@ jobs:
 
           - name: Build Docker image
             run: |
-              docker build -t ecs-threat-composer-app:sha-${{ github.sha }} ./app
+              docker build -t ${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }} ./app
 
           # - name: Scan image with Grype
           #   uses: anchore/scan-action@v6
@@ -64,13 +64,13 @@ jobs:
             env:
               ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
             run: |
-              docker tag ${{ env.ECR_REPOSITORY }}sha-${{ github.sha }} \
-                $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}sha-${{ github.sha }}
+              docker tag ${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }} \
+                $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}
 
-              docker tag ${{ env.ECR_REPOSITORY }}sha-${{ github.sha }} \
+              docker tag ${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }} \
                 $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
-              docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}sha-${{ github.sha }}
+              docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}
               docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
               echo "### Image pushed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
