@@ -41,6 +41,7 @@ jobs:
           - name: Build Docker image
             run: |
               docker build -t ${{ secrets.ECR_REPOSITORY }}:sha-${{ github.sha }} ./app
+              echo "::set-output name=image::${{ steps.build-image.outputs.image }}"
 
           # - name: Scan image with Grype
           #   uses: anchore/scan-action@v6

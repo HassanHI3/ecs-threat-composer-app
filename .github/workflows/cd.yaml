@@ -42,7 +42,6 @@ jobs:
             role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
             aws-region: ${{ secrets.AWS_REGION }}
 
-
       - name: Render task definition with new image
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
