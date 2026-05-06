@@ -68,10 +68,10 @@ jobs:
                 $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}sha-${{ github.sha }}
 
               docker tag ${{ env.ECR_REPOSITORY }}sha-${{ github.sha }} \
-                $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+                $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}sha-${{ github.sha }}:latest
 
               docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}sha-${{ github.sha }}
-              docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+              docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}sha-${{ github.sha }}:latest
 
               echo "### Image pushed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
               echo "**Image:** \`$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}sha-${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
