@@ -36,7 +36,7 @@ jobs:
             uses: actions/checkout@v4
 
           - name: Debug SHA
-            run: echo "GitHub SHA: ${{ github.sha }}"
+            run: echo "GitHub SHA:${{ github.sha }}"
 
           - name: Build Docker image
             run: |
