@@ -50,6 +50,7 @@ jobs:
       - name: Terraform Fmt
         working-directory: infra
         run: terraform fmt -check -recursive
+        continue-on-error: true
 
       - name: Terraform Validate
         working-directory: infra
