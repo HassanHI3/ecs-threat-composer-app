@@ -59,7 +59,7 @@ jobs:
       - name: Terraform Plan
         working-directory: infra
         run: |
-          terraform plan -var-file="terraform.tfvars" -input=false -no-color \
+          terraform plan -var-file="dev.tfvars" -input=false -no-color \
             -var="ECR_REPOSITORY=${{ env.ECR_REPOSITORY }}" \
             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
             -var="container_image_tag=latest" \
