@@ -19,5 +19,7 @@ terraform {
 # Configure the AWS Provider
 provider "aws" {
   region = "eu-west-2"
+  assume_role {
+    role_arn = "arn:aws:iam::891377356090:role/CICD_ECS_ROLE"
+  }
 }
-
