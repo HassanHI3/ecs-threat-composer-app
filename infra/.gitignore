@@ -8,8 +8,6 @@ terraform.tfvars
 terraform.tfvars.json
 
 # Terraform variable files that may contain secrets
-*dev.tfvars
-*dev.tfvars.json
 
 # Override files
 override.tf
