@@ -59,7 +59,7 @@ jobs:
       - name: Terraform Plan
         working-directory: infra
         run: |
-          terraform plan \
+          terraform plan -var-file="terraform.tfvars" -input=false -no-color \
             -var="ECR_REPOSITORY=${{ env.ECR_REPOSITORY }}" \
             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
             -var="container_image_tag=latest" \
@@ -69,7 +69,7 @@ jobs:
       - name: Terraform Apply
         working-directory: infra
         run: |
-          terraform apply -auto-approve \
+          terraform apply -auto-approve -input=false -no-color \
             -var="ECR_REPOSITORY=${{ env.ECR_REPOSITORY }}" \
             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
             -var="container_image_tag=latest" \
