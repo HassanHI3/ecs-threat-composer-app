@@ -63,3 +63,7 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      - name: Post-deploy health check
+        run: |
+          curl --fail --silent --show-error https://tm.threatmodapp.com/health
