@@ -49,7 +49,7 @@ jobs:
 
       - name: Terraform Fmt
         working-directory: infra
-        run: terraform fmt -check
+        run: terraform fmt -check -recursive
 
       - name: Terraform Validate
         working-directory: infra
