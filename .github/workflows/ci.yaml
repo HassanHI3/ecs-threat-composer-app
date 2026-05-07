@@ -1,13 +1,12 @@
 name: CI Workflow
 
 on:
+  workflow_run:
+    workflows: ["Terraform Deploy"]
+    types: [completed]
+    branches: [main]
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
