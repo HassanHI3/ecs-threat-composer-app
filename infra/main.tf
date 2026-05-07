@@ -349,7 +349,7 @@ resource "aws_secretsmanager_secret" "my_secret" {
 }
 
 resource "aws_secretsmanager_secret_version" "my_secret_version" {
-  secret_id     = aws_secretsmanager_secret.my_secret.id
+  secret_id = aws_secretsmanager_secret.my_secret.id
   secret_string = jsonencode({
     AWS_ACCESS_KEY_ID     = var.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY,
