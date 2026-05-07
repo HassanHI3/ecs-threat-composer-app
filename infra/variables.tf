@@ -23,11 +23,11 @@ variable "vpc_cidr" {
   type        = string
 }
 
-variable "certificate_arn" {
-  description = "ACM certificate ARN for the HTTPS listener"
-  type        = string
-  sensitive =  true
-}
+# variable "certificate_arn" {
+#   description = "ACM certificate ARN for the HTTPS listener"
+#   type        = string
+#   sensitive =  true
+# }
 
 variable "container_image" {
   description = "Full container image URI for the ECS task"
