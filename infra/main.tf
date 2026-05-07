@@ -344,18 +344,18 @@ resource "aws_ecr_repository" "ecs_threat_composer_app" {
     scan_on_push = true
   }
 }
-resource "aws_secretsmanager_secret" "my_secret" {
-  name = "my-app-credentials"
-}
+# resource "aws_secretsmanager_secret" "my_secret" {
+#   name = "my-app-credentials"
+# }
 
-resource "aws_secretsmanager_secret_version" "my_secret_version" {
-  secret_id = aws_secretsmanager_secret.my_secret.id
-  secret_string = jsonencode({
-    ECR_REGISTRY   = var.ECR_REGISTRY
-    ECR_REPOSITORY = var.ECR_REPOSITORY
-    IMAGE_URI      = "${var.ECR_REGISTRY}/${var.ECR_REPOSITORY}:${var.container_image_tag}"
-  })
-}
+# resource "aws_secretsmanager_secret_version" "my_secret_version" {
+#   secret_id = aws_secretsmanager_secret.my_secret.id
+#   secret_string = jsonencode({
+#     ECR_REGISTRY   = var.ECR_REGISTRY
+#     ECR_REPOSITORY = var.ECR_REPOSITORY
+#     IMAGE_URI      = "${var.ECR_REGISTRY}/${var.ECR_REPOSITORY}:${var.container_image_tag}"
+#   })
+# }
 resource "aws_ecs_cluster" "threatmod_cluster" {
   name = "threatmod-cluster-main"
 

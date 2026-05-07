@@ -2,7 +2,7 @@ name: ECS Deployment
 
 on:
   workflow_run:
-    workflows: ["CI Workflow"]
+    workflows: ["Terraform Deploy"]
     types: [completed]
     branches: [main]
   workflow_dispatch:
