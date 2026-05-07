@@ -7,7 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Only one deploy at a time - prevents race conditionss
+# Only one deploy at a time - prevents race conditionsss
 # If two builds finish back-to-back, only the latest deploy runs
 
 concurrency:
