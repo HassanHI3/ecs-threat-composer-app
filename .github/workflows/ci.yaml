@@ -41,7 +41,7 @@ jobs:
           - name: Build Docker image
             id: build-image
             run: |
-              docker build -t ${ env.ECR_REPOSITORY }:sha-${{ github.sha }} ./app
+              docker build -t ${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }} ./app
               echo "image=${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}" >> $GITHUB_OUTPUT
 
           - name: Use image output
