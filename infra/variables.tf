@@ -52,17 +52,6 @@ variable "execution_role_arn" {
   description = "IAM execution role ARN used by ECS to pull images and send logs"
   type        = string
 }
-
-variable "AWS_ACCESS_KEY_ID" {
-  description = "AWS access key ID for Terraform to authenticate with AWS"
-  type        = string
-}
-
-variable "AWS_SECRET_ACCESS_KEY" {
-  description = "AWS secret access key for Terraform to authenticate with AWS"
-  type        = string
-}
-
 variable "ECR_REGISTRY" {
   description = "ECR registry URL"
   type        = string
