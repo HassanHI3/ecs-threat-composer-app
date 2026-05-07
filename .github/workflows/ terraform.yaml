@@ -69,7 +69,7 @@ jobs:
       - name: Terraform Apply
         working-directory: infra
         run: |
-          terraform apply -auto-approve -input=false -no-color \
+          terraform apply -var-file="dev.tfvars" -auto-approve -input=false -no-color \
             -var="ECR_REPOSITORY=${{ env.ECR_REPOSITORY }}" \
             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
             -var="container_image_tag=latest" \
