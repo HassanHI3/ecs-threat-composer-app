@@ -5,9 +5,7 @@ terraform {
       version = "~> 6.0"
     }
   }
-}
 
-terraform {
   backend "s3" {
     bucket       = "ecs-threat-composer-bucket"
     key          = "terraform.tfstate"
@@ -16,7 +14,6 @@ terraform {
   }
 }
 
-# Configure the AWS Provider
 provider "aws" {
   region = "eu-west-2"
 }

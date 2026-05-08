@@ -7,4 +7,5 @@ container_name  = "threatmod-app-container-serverless"
 container_image = "891377356090.dkr.ecr.eu-west-2.amazonaws.com/ecs-threat-composer-app:latest"
 container_image_tag = "latest"
 ECR_REPOSITORY = "ecs-threat-composer-app"
-#inputed for dev infra and is safe
+# non sensitive config for the dev environment
+# Sensitive values like ARNs and credentials have been moved to secrets
