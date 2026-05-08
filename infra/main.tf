@@ -320,7 +320,7 @@ resource "aws_lb_listener" "threatmod_alb_listener_https" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = aws_acm_certificate_validation.threatmod_cert_validation.certificate_arn
+  certificate_arn   = aws_acm_certificate.threatmod_cert.arn
 
   default_action {
     type             = "forward"
@@ -512,7 +512,8 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
 }
 
 resource "aws_acm_certificate" "threatmod_cert" {
-  domain_name               = "tm.threatmodapp.com"
+  domain_name               = "threatmodapp.com"
+  subject_alternative_names = ["tm.threatmodapp.com"]
   validation_method         = "DNS"
 
   lifecycle {
@@ -520,44 +521,44 @@ resource "aws_acm_certificate" "threatmod_cert" {
   }
 
   tags = {
-    Name        = "tm.threatmod-cert"
+    Name        = "threatmod-cert"
     Environment = var.environment
   }
 }
 
-# 2. Create the DNS validation records in Route53
-resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.threatmod_cert.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name  # e.g. "_abc123def456.threatmodapp.com"
-      record = dvo.resource_record_value # e.g. "_xyz789ghi012.acm-validations.aws."
-      type   = dvo.resource_record_type  # e.g. "CNAME"
-    }
-  }
+# # 2. Create the DNS validation records in Route53
+# resource "aws_route53_record" "cert_validation" {
+#   for_each = {
+#     for dvo in aws_acm_certificate.threatmod_cert.domain_validation_options : dvo.domain_name => {
+#       name   = dvo.resource_record_name  # e.g. "_abc123def456.threatmodapp.com"
+#       record = dvo.resource_record_value # e.g. "_xyz789ghi012.acm-validations.aws."
+#       type   = dvo.resource_record_type  # e.g. "CNAME"
+#     }
+#   }
 
-  zone_id = aws_route53_zone.main.zone_id
-  name    = each.value.name     # e.g. "_abc123def456.threatmodapp.com"
-  type    = each.value.type     # e.g. "CNAME"
-  records = [each.value.record] # e.g. ["_xyz789ghi012.acm-validations.aws."]
-  ttl     = 60
-}
+#   zone_id = aws_route53_zone.main.zone_id
+#   name    = each.value.name     # e.g. "_abc123def456.threatmodapp.com"
+#   type    = each.value.type     # e.g. "CNAME"
+#   records = [each.value.record] # e.g. ["_xyz789ghi012.acm-validations.aws."]
+#   ttl     = 60
+# }
 
 # 3. Wait for ACM to validate the certificate
-resource "aws_acm_certificate_validation" "threatmod_cert_validation" {
-  certificate_arn = aws_acm_certificate.threatmod_cert.arn
+# resource "aws_acm_certificate_validation" "threatmod_cert_validation" {
+#   certificate_arn = aws_acm_certificate.threatmod_cert.arn
 
-  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
-}
-resource "aws_route53_zone" "main" {
-  name = "threatmodapp.com"
-}
-resource "aws_route53_record" "threatmod_app" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "tm.threatmodapp.com"
-  type    = "A"
-  alias {
-    name                   = aws_lb.threatmod_application_load_balancer.dns_name
-    zone_id                = aws_lb.threatmod_application_load_balancer.zone_id
-    evaluate_target_health = true
-  }
-}
+#   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+# }
+# resource "aws_route53_zone" "main" {
+#   name = "threatmodapp.com"
+# }
+# resource "aws_route53_record" "threatmod_app" {
+#   zone_id = aws_route53_zone.main.zone_id
+#   name    = "tm.threatmodapp.com"
+#   type    = "A"
+#   alias {
+#     name                   = aws_lb.threatmod_application_load_balancer.dns_name
+#     zone_id                = aws_lb.threatmod_application_load_balancer.zone_id
+#     evaluate_target_health = true
+#   }
+# }
