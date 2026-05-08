@@ -512,8 +512,7 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
 }
 
 resource "aws_acm_certificate" "threatmod_cert" {
-  domain_name               = "threatmodapp.com"
-  subject_alternative_names = ["tm.threatmodapp.com"]
+  domain_name               = "tm.threatmodapp.com"
   validation_method         = "DNS"
 
   lifecycle {
@@ -521,7 +520,7 @@ resource "aws_acm_certificate" "threatmod_cert" {
   }
 
   tags = {
-    Name        = "threatmod-cert"
+    Name        = "tm.threatmod-cert"
     Environment = var.environment
   }
 }
@@ -556,18 +555,6 @@ resource "aws_route53_record" "threatmod_app" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "tm.threatmodapp.com"
   type    = "A"
-  alias {
-    name                   = aws_lb.threatmod_application_load_balancer.dns_name
-    zone_id                = aws_lb.threatmod_application_load_balancer.zone_id
-    evaluate_target_health = true
-  }
-}
-
-resource "aws_route53_record" "root" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "threatmodapp.com"
-  type    = "A"
-
   alias {
     name                   = aws_lb.threatmod_application_load_balancer.dns_name
     zone_id                = aws_lb.threatmod_application_load_balancer.zone_id
