@@ -355,6 +355,7 @@ resource "aws_lb_listener" "threatmod_alb_listener_for_redirect_http_to_https" {
 resource "aws_ecr_repository" "ecs_threat_composer_app" {
   name                 = var.ECR_REPOSITORY
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
 
   image_scanning_configuration {
     scan_on_push = true
