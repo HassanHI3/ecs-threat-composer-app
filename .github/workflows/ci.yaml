@@ -18,7 +18,7 @@ permissions:
   contents: read    # Required for actions/checkout
 
 env:
-  AWS_REGION: eu-west-2                      # AWS regionn
+  AWS_REGION: eu-west-2                      # AWS regionnn
   ECR_REPOSITORY: ecs-threat-composer-app     # Your ECR repository
   ECS_SERVICE: threatmod-cluster-service       # Your ECS service name
   ECS_CLUSTER: threatmod-cluster-main       # Your ECS cluster name
