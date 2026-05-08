@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type "destroy" to confirm you want to destroy all infrastructure'
+        description: 'Type "destroy-dev" to confirm you want to destroy DEV infrastructure'
         required: true
         type: string
 
@@ -17,10 +17,10 @@ env:
 
 jobs:
   destroy:
-    name: Terraform Destroy
+    name: Terraform Destroy Dev
     runs-on: ubuntu-latest
     environment: dev
-    if: ${{ inputs.confirm == 'destroy' }}
+    if: ${{ inputs.confirm == 'destroy-dev' }}
 
     steps:
       - name: Checkout code
@@ -39,6 +39,14 @@ jobs:
         working-directory: infra
         run: terraform init
 
+      - name: Terraform Plan Destroy
+        working-directory: infra
+        run: |
+          terraform plan -destroy -var-file="dev.tfvars" -input=false \
+            -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
+            -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
+            -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+
       - name: Terraform Destroy
         working-directory: infra
         run: |
@@ -48,7 +56,7 @@ jobs:
             -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
 
       - name: Destroy summary
-        if: always()
+        if: success()
         run: |
           echo "### Terraform Destroy Complete :boom:" >> $GITHUB_STEP_SUMMARY
-          echo "All infrastructure has been destroyed." >> $GITHUB_STEP_SUMMARY
+          echo "DEV infrastructure has been destroyed." >> $GITHUB_STEP_SUMMARY
