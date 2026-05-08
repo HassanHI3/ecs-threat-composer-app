@@ -47,13 +47,13 @@ variable "container_image_tag" {
 variable "task_role_arn" {
   description = "IAM role ARN assumed by the running ECS task"
   type        = string
-  sensitive = true
+  sensitive   = true
 }
 
 variable "execution_role_arn" {
   description = "IAM execution role ARN used by ECS to pull images and send logs"
   type        = string
-  sensitive = true
+  sensitive   = true
 }
 variable "ECR_REGISTRY" {
   description = "ECR registry URL"

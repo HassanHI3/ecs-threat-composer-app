@@ -66,4 +66,4 @@ jobs:
 
       - name: Post-deploy health check
         run: |
-          curl --fail --silent --show-error http://tm.threatmodapp.com/health
+          curl --fail --silent --show-error https://tm.threatmodapp.com/health

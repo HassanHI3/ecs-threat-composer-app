@@ -1,0 +1,54 @@
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm you want to destroy all infrastructure'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    environment: dev
+    if: ${{ inputs.confirm == 'destroy' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CICD_ECS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra
+        run: terraform init
+
+      - name: Terraform Destroy
+        working-directory: infra
+        run: |
+          terraform destroy -var-file="dev.tfvars" -auto-approve -input=false \
+            -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
+            -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
+            -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+
+      - name: Destroy summary
+        if: always()
+        run: |
+          echo "### Terraform Destroy Complete :boom:" >> $GITHUB_STEP_SUMMARY
+          echo "All infrastructure has been destroyed." >> $GITHUB_STEP_SUMMARY

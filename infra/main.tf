@@ -298,43 +298,59 @@ resource "aws_lb_target_group" "threatmod_target_group" {
   }
 }
 
-resource "aws_lb_listener" "threatmod_alb_listener_for_target_group" {
+# resource "aws_lb_listener" "threatmod_alb_listener_for_target_group" {
+#   load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
+#   port              = "80"
+#   protocol          = "HTTP"
+#   # ssl_policy        = "ELBSecurityPolicy-2016-08"
+#   # certificate_arn   = var.certificate_arn
+
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.threatmod_target_group.arn
+#   }
+#   tags = {
+#     Name = "threatmod-alb-listener"
+#   }
+# }
+
+#fix this
+resource "aws_lb_listener" "threatmod_alb_listener_https" {
   load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
-  port              = "80"
-  protocol          = "HTTP"
-  # ssl_policy        = "ELBSecurityPolicy-2016-08"
-  # certificate_arn   = var.certificate_arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = aws_acm_certificate_validation.threatmod_cert_validation.certificate_arn
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.threatmod_target_group.arn
   }
+
   tags = {
-    Name = "threatmod-alb-listener"
+    Name = "threatmod-alb-listener-https"
   }
 }
+resource "aws_lb_listener" "threatmod_alb_listener_for_redirect_http_to_https" {
+  load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
+  port              = "80"
+  protocol          = "HTTP"
 
-# resource "aws_lb_listener" "threatmod_alb_listener_for_redirect_http_to_https" {
-#   load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
-#   port              = "80"
-#   protocol          = "HTTP"
+  default_action {
+    type = "redirect"
 
-#   default_action {
-#     type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+      # this means that it permanently redirects the http to https and browser will cache it for next time
+    }
+  }
 
-#     redirect {
-#       port        = "443"
-#       protocol    = "HTTPS"
-#       status_code = "HTTP_301"
-#       # this means that it permanently redirects the http to https and browser will cache it for next time
-#     }
-#   }
-
-#   tags = {
-#     Name = "threatmod-alb-listener-redirect-to-https"
-#   }
-# }
-
+  tags = {
+    Name = "threatmod-alb-listener-redirect-to-https"
+  }
+}
 
 resource "aws_ecr_repository" "ecs_threat_composer_app" {
   name                 = var.ECR_REPOSITORY
@@ -478,8 +494,8 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
   force_new_deployment = true
 
   depends_on = [
-    aws_lb_listener.threatmod_alb_listener_for_target_group,
-    # aws_lb_listener.threatmod_alb_listener_for_redirect_http_to_https
+    aws_lb_listener.threatmod_alb_listener_https,
+    aws_lb_listener.threatmod_alb_listener_for_redirect_http_to_https
   ]
 
   network_configuration {
@@ -493,6 +509,45 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
     container_name   = "threatmod-app-container-serverless"
     container_port   = 3003
   }
+}
+
+resource "aws_acm_certificate" "threatmod_cert" {
+  domain_name               = "threatmodapp.com"
+  subject_alternative_names = ["tm.threatmodapp.com"]
+  validation_method         = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name        = "threatmod-cert"
+    Environment = var.environment
+  }
+}
+
+# 2. Create the DNS validation records in Route53
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.threatmod_cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name  # e.g. "_abc123def456.threatmodapp.com"
+      record = dvo.resource_record_value # e.g. "_xyz789ghi012.acm-validations.aws."
+      type   = dvo.resource_record_type  # e.g. "CNAME"
+    }
+  }
+
+  zone_id = aws_route53_zone.main.zone_id
+  name    = each.value.name     # e.g. "_abc123def456.threatmodapp.com"
+  type    = each.value.type     # e.g. "CNAME"
+  records = [each.value.record] # e.g. ["_xyz789ghi012.acm-validations.aws."]
+  ttl     = 60
+}
+
+# 3. Wait for ACM to validate the certificate
+resource "aws_acm_certificate_validation" "threatmod_cert_validation" {
+  certificate_arn = aws_acm_certificate.threatmod_cert.arn
+
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 resource "aws_route53_zone" "main" {
   name = "threatmodapp.com"
