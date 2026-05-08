@@ -417,7 +417,7 @@ resource "aws_ecs_task_definition" "threatmod_app_task" {
   container_definitions = jsonencode([
     {
       name      = "threatmod-app-container-serverless"
-      image     = "${var.ECR_REGISTRY}/${var.ECR_REPOSITORY}:${var.container_image_tag}"
+      image     = var.container_image
       essential = true
 
       portMappings = [
@@ -501,6 +501,18 @@ resource "aws_route53_record" "threatmod_app" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "tm.threatmodapp.com"
   type    = "A"
+  alias {
+    name                   = aws_lb.threatmod_application_load_balancer.dns_name
+    zone_id                = aws_lb.threatmod_application_load_balancer.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "root" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "threatmodapp.com"
+  type    = "A"
+
   alias {
     name                   = aws_lb.threatmod_application_load_balancer.dns_name
     zone_id                = aws_lb.threatmod_application_load_balancer.zone_id

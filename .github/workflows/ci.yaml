@@ -22,7 +22,7 @@ env:
   ECR_REPOSITORY: ecs-threat-composer-app     # Your ECR repository
   ECS_SERVICE: threatmod-cluster-service       # Your ECS service name
   ECS_CLUSTER: threatmod-cluster-main       # Your ECS cluster name
-  ECS_TASK_DEFINITION: .aws/task-definition.json  # Task definition file path
+  ECS_TASK_DEFINITION: infra/.aws/task-definition.json  # Task definition file path
   CONTAINER_NAME: threatmod-app-container-serverless  # Name of the container in the task definition
 
 jobs:
