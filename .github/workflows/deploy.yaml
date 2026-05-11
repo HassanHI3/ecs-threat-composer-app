@@ -1,0 +1,123 @@
+name: Deploy infra and update ECS Service
+
+on:
+  workflow_run:
+    workflows: ["CI Workflow"]
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/deploy.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  ECR_REPOSITORY: ecs-threat-composer-app
+  ECS_SERVICE: threatmod-cluster-service
+  ECS_CLUSTER: threatmod-cluster-main
+  ECS_TASK_DEFINITION: infra/.aws/task-definition.json
+  CONTAINER_NAME: threatmod-app-container-serverless
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CICD_ECS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra
+        run: terraform init
+
+      - name: Terraform Fmt
+        working-directory: infra
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Validate
+        working-directory: infra
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: infra
+        run: |
+          terraform plan -var-file="dev.tfvars" -input=false -no-color \
+            -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
+            -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
+            -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+
+      - name: Terraform Apply
+        working-directory: infra
+        run: |
+          terraform apply -var-file="dev.tfvars" -auto-approve -input=false -no-color \
+            -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
+            -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
+            -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+
+  deploy-ecs:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    needs: terraform
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CICD_ECS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Render task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:sha-${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Post-deploy health check
+        run: |
+          curl --fail --silent --show-error https://tm.threatmodapp.com/health
+
+      - name: Deploy summary
+        if: success()
+        run: |
+          echo "### Deployment Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "**App URL:** https://tm.threatmodapp.com" >> $GITHUB_STEP_SUMMARY

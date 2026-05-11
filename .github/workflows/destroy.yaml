@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type "destroy" to confirm you want to destroy DEV infrastructure'
+        description: 'Type "destroy-dev" to confirm you want to destroy DEV infrastructure'
         required: true
         type: string
 

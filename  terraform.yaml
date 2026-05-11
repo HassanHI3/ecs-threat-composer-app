@@ -1,0 +1,73 @@
+# name: Terraform Deploy
+
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - "infra/**"
+#       - ".github/workflows/terraform.yaml"
+#   workflow_dispatch:
+
+# concurrency:
+#   group: terraform-${{ github.ref }}
+#   cancel-in-progress: true
+
+# permissions:
+#   id-token: write
+#   contents: read
+
+# env:
+#   AWS_REGION: eu-west-2                      # AWS regionnn
+#   ECR_REPOSITORY: ecs-threat-composer-app     # Your ECR repository
+#   ECS_SERVICE: threatmod-cluster-service       # Your ECS service name
+#   ECS_CLUSTER: threatmod-cluster-main       # Your ECS cluster name
+#   ECS_TASK_DEFINITION: infra/.aws/task-definition.json  # Task definition file path
+#   CONTAINER_NAME: threatmod-app-container-serverless  # Name of the container in the task definition
+
+# jobs:
+#   terraform:
+#     name: Terraform Deploy
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ secrets.CICD_ECS_ROLE }}
+#           aws-region: ${{ env.AWS_REGION }}
+
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v3
+
+#       - name: Terraform Init
+#         working-directory: infra
+#         run: terraform init
+
+#       - name: Terraform Fmt
+#         working-directory: infra
+#         run: terraform fmt -check -recursive
+#         continue-on-error: true
+
+#       - name: Terraform Validate
+#         working-directory: infra
+#         run: terraform validate
+
+#       - name: Terraform Plan
+#         working-directory: infra
+#         run: |
+#           terraform plan -var-file="dev.tfvars" -input=false -no-color \
+#             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
+#             -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
+#             -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+
+#       - name: Terraform Apply
+#         working-directory: infra
+#         run: |
+#           terraform apply -var-file="dev.tfvars" -auto-approve -input=false -no-color \
+#             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
+#             -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
+#             -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
