@@ -64,3 +64,15 @@ variable "ECR_REPOSITORY" {
   description = "ECR repository name"
   type        = string
 }
+
+variable "cloudflare_api_token" {
+  description = "value of the Cloudflare API token with permissions to manage DNS records"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "value of the Cloudflare zone ID for the domain where DNS records will be managed"
+  type        = string
+  sensitive   = true
+}

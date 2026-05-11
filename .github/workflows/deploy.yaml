@@ -67,6 +67,8 @@ jobs:
             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
             -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
             -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+            --var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
+            --var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}"
 
       - name: Terraform Apply
         working-directory: infra
@@ -75,6 +77,8 @@ jobs:
             -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
             -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
             -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+            --var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
+            --var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}"
 
   deploy-ecs:
     name: Deploy to ECS

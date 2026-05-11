@@ -527,39 +527,37 @@ resource "aws_acm_certificate" "threatmod_cert" {
   }
 }
 
-# # 2. Create the DNS validation records in Route53
-# resource "aws_route53_record" "cert_validation" {
-#   for_each = {
-#     for dvo in aws_acm_certificate.threatmod_cert.domain_validation_options : dvo.domain_name => {
-#       name   = dvo.resource_record_name  # e.g. "_abc123def456.threatmodapp.com"
-#       record = dvo.resource_record_value # e.g. "_xyz789ghi012.acm-validations.aws."
-#       type   = dvo.resource_record_type  # e.g. "CNAME"
-#     }
-#   }
+resource "cloudflare_dns_record" "tm_threatmodapp" {
+  zone_id = var.cloudflare_zone_id
 
-#   zone_id = aws_route53_zone.main.zone_id
-#   name    = each.value.name     # e.g. "_abc123def456.threatmodapp.com"
-#   type    = each.value.type     # e.g. "CNAME"
-#   records = [each.value.record] # e.g. ["_xyz789ghi012.acm-validations.aws."]
-#   ttl     = 60
-# }
+  name    = "tm"
+  type    = "CNAME"
+  content = aws_lb.threatmod_application_load_balancer.dns_name
+  ttl     = 1
+  proxied = false
+}
 
-# 3. Wait for ACM to validate the certificate
-# resource "aws_acm_certificate_validation" "threatmod_cert_validation" {
-#   certificate_arn = aws_acm_certificate.threatmod_cert.arn
+resource "cloudflare_dns_record" "acm_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.threatmod_cert.domain_validation_options : dvo.domain_name => {
+      name    = trimsuffix(dvo.resource_record_name, ".")
+      content = trimsuffix(dvo.resource_record_value, ".")
+      type    = dvo.resource_record_type
+    }
+  }
 
-#   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
-# }
-# resource "aws_route53_zone" "main" {
-#   name = "threatmodapp.com"
-# }
-# resource "aws_route53_record" "threatmod_app" {
-#   zone_id = aws_route53_zone.main.zone_id
-#   name    = "tm.threatmodapp.com"
-#   type    = "A"
-#   alias {
-#     name                   = aws_lb.threatmod_application_load_balancer.dns_name
-#     zone_id                = aws_lb.threatmod_application_load_balancer.zone_id
-#     evaluate_target_health = true
-#   }
-# }
+  zone_id = var.cloudflare_zone_id
+  name    = each.value.name
+  type    = each.value.type
+  content = each.value.content
+  ttl     = 1
+  proxied = false
+}
+
+resource "aws_acm_certificate_validation" "threatmod_cert_validation" {
+  certificate_arn = aws_acm_certificate.threatmod_cert.arn
+
+  validation_record_fqdns = [
+    for record in cloudflare_dns_record.acm_validation : record.name
+  ]
+}
