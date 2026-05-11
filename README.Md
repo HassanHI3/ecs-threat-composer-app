@@ -107,7 +107,7 @@ Safely tears down all infrastructure with a confirmation safeguard:
 - Runs `terraform plan -destroy` then `terraform destroy`
 
 <!-- SCREENSHOT: successful Destroy pipeline run -->
-![Destroy Pipeline](docs/screenshots/destroy-pipeline.png)
+![Destroy Pipeline](app/images/terraform-destroy.png)
 
 ### Pipeline Flow
 App code change:
