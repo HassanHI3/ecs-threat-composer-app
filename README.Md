@@ -77,7 +77,7 @@ Builds the Docker image, tags it with the Git SHA, and pushes it to Amazon ECR.
 - Job summary with image reference
 
 <!-- SCREENSHOT: successful CI pipeline run in GitHub Actions -->
-![CI Pipeline](docs/screenshots/ci-pipeline.png)
+![CI/CD Pipeline](app/images/ci-build-pipeline.png)
 
 ### Deploy Pipeline (`deploy.yaml`)
 **Triggers:** After CI completes successfully, push to `main` (on `infra/**` changes), `workflow_dispatch`
@@ -87,6 +87,7 @@ Combined infrastructure and application deployment:
 **Job 1 — Terraform Apply:**
 - Runs `terraform fmt`, `validate`, `plan`
 - Applies infrastructure changes (VPC, ECS, ALB, ACM, Route53)
+![Terraform Apply](app/images/terraform-apply.png)
 
 **Job 2 — ECS Deploy:**
 - Renders new task definition with the SHA-tagged image
@@ -95,7 +96,7 @@ Combined infrastructure and application deployment:
 - Fails the pipeline if the app is unhealthy
 
 <!-- SCREENSHOT: successful Deploy pipeline run -->
-![Deploy Pipeline](docs/screenshots/deploy-pipeline.png)
+![Deploy to ECS](app/images/deploy-to-ecs.png)
 
 ### Destroy Pipeline (`destroy.yaml`)
 **Triggers:** `workflow_dispatch` only (manual)
