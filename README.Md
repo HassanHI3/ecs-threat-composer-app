@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project uses a cloud native web application with a fully automated CI/CD pipeline on AWS, built to demonstrate production grade deployment practices.
+This project is a cloud-native web application with a fully automated CI/CD pipeline on AWS, built to demonstrate production-grade deployment practices.
 
 The application is containerised using a multi-stage Docker build and runs on AWS ECS Fargate behind an Application Load Balancer, within a multi-AZ VPC architecture with segregated public and private subnets. Fargate was chosen over EC2 to remove the operational overhead of managing servers, with AWS handling provisioning, scaling, and patching of the underlying infrastructure.
 
