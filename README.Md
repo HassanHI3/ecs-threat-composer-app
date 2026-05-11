@@ -19,7 +19,7 @@ ECS Fargate was chosen over EC2 to eliminate the need for server management, all
 The application is accessible at: **https://tm.threatmodapp.com**
 
 <!-- SCREENSHOT: browser address bar showing https:// padlock + app loaded -->
-![HTTPS Domain Access](docs/screenshots/https-domain.png)
+![HTTPS Domain Access](app/images/https%20to%20domain.gif)
 
 ---
 
