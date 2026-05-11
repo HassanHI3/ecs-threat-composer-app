@@ -120,6 +120,7 @@ workflow_dispatch → destroy.yaml (requires confirmation)
 ---
 
 ## Repository Structure
+```bash
 ecs-threat-composer-app/
 │
 ├── app/                          # Application source code
@@ -151,7 +152,7 @@ ecs-threat-composer-app/
 │
 ├── .gitignore
 └── README.md
-
+```
 ---
 
 ## How It Works
