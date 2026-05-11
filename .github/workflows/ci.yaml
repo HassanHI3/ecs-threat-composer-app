@@ -2,11 +2,14 @@ name: CI Workflow
 
 on:
   workflow_run:
-    workflows: ["Terraform Deploy"]
+    workflows: ["Deploy Infra and update ECS Service"]
     types: [completed]
     branches: [main]
   push:
     branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci.yaml'
   workflow_dispatch:
 
 concurrency:
@@ -14,16 +17,16 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  id-token: write   # Required for OIDC authentication with AWS
-  contents: read    # Required for actions/checkout
+  id-token: write
+  contents: read
 
 env:
-  AWS_REGION: eu-west-2                      # AWS regionnn
-  ECR_REPOSITORY: ecs-threat-composer-app     # Your ECR repository
-  ECS_SERVICE: threatmod-cluster-service       # Your ECS service name
-  ECS_CLUSTER: threatmod-cluster-main       # Your ECS cluster name
-  ECS_TASK_DEFINITION: infra/.aws/task-definition.json  # Task definition file path
-  CONTAINER_NAME: threatmod-app-container-serverless  # Name of the container in the task definition
+  AWS_REGION: eu-west-2
+  ECR_REPOSITORY: ecs-threat-composer-app
+  ECS_SERVICE: threatmod-cluster-service
+  ECS_CLUSTER: threatmod-cluster-main
+  ECS_TASK_DEFINITION: infra/.aws/task-definition.json
+  CONTAINER_NAME: threatmod-app-container-serverless
 
 jobs:
   build-and-push:
@@ -44,19 +47,19 @@ jobs:
             run: |
               echo "The built image is ${{ steps.build-image.outputs.image }}"
 
-          # - name: Scan image with Grype
-          #   uses: anchore/scan-action@v6
-          #   with:
-          #     image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
-          #     fail-build: "true"
-          #     severity-cutoff: high
-          #     output-format: table
+          - name: Scan image with Grype
+            uses: anchore/scan-action@v6
+            with:
+              image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+              fail-build: "true"
+              severity-cutoff: high
+              output-format: table
 
-          # - name: Upload Grype scan results
-          #   if: always()
-          #   uses: github/codeql-action/upload-sarif@v3
-          #   with:
-          #     sarif_file: ${{ steps.scan.outputs.sarif }}
+          - name: Upload Grype scan results
+            if: always()
+            uses: github/codeql-action/upload-sarif@v3
+            with:
+              sarif_file: ${{ steps.scan.outputs.sarif }}
 
           - name: Configure AWS credentials
             uses: aws-actions/configure-aws-credentials@v4

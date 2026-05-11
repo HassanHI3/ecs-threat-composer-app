@@ -61,7 +61,7 @@ resource "aws_subnet" "ecs_private_subnet_b" {
 }
 
 resource "aws_egress_only_internet_gateway" "ecs_threat_composer_egress_igw" {
-  vpc_id = aws_vpc.ecs_threat_composer_vpc.id # use route table to route ipv6 traffic + vpc need to have ipv6 cidr block assigned
+  vpc_id = aws_vpc.ecs_threat_composer_vpc.id
 
   tags = {
     Name        = "ecs-threat-composer-vpc"
@@ -87,9 +87,6 @@ resource "aws_eip" "nat_eip_eu_west_2b" {
 }
 
 resource "aws_nat_gateway" "ecs_threat_composer_nat_gateway_public_a" {
-  # vpc_id = aws_vpc.ecs_threat_composer_vpc.id
-  # availability_mode = "regional"
-  # using zonal NAT gateway but could use regional and it would be more cost effective but less resilient.
   subnet_id     = aws_subnet.ecs_public_subnet_a.id
   allocation_id = aws_eip.nat_eip_eu_west_2a.id
 
@@ -101,9 +98,6 @@ resource "aws_nat_gateway" "ecs_threat_composer_nat_gateway_public_a" {
 }
 
 resource "aws_nat_gateway" "ecs_threat_composer_nat_gateway_public_b" {
-  # vpc_id = aws_vpc.ecs_threat_composer_vpc.id
-  # availability_mode = "regional"
-  # using zonal NAT gateway but could use regional and it would be more cost effective but less resilient.
   subnet_id     = aws_subnet.ecs_public_subnet_b.id
   allocation_id = aws_eip.nat_eip_eu_west_2b.id
 
@@ -213,7 +207,6 @@ resource "aws_lb" "threatmod_application_load_balancer" {
   subnets            = [aws_subnet.ecs_public_subnet_a.id, aws_subnet.ecs_public_subnet_b.id]
 
   enable_deletion_protection = false
-  #change to true for production environments
 
   tags = {
     Name        = "threatmod-application-load-balancer-main"
@@ -225,7 +218,6 @@ resource "aws_security_group" "threatmod_application_load_balancer_sg" {
   name_prefix = "alb-"
   vpc_id      = aws_vpc.ecs_threat_composer_vpc.id
   description = "Security group for the Application Load Balancer"
-  # ALB security group - all external traffic has to come through here
 
   ingress {
     from_port   = 80
@@ -281,8 +273,6 @@ resource "aws_lb_target_group" "threatmod_target_group" {
   protocol    = "HTTP"
   vpc_id      = aws_vpc.ecs_threat_composer_vpc.id
   target_type = "ip"
-  # Required for Fargate
-  # similar to ecs tasks and listens on the same port.
 
   health_check {
     path                = "/health"
@@ -298,23 +288,6 @@ resource "aws_lb_target_group" "threatmod_target_group" {
   }
 }
 
-# resource "aws_lb_listener" "threatmod_alb_listener_for_target_group" {
-#   load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
-#   port              = "80"
-#   protocol          = "HTTP"
-#   # ssl_policy        = "ELBSecurityPolicy-2016-08"
-#   # certificate_arn   = var.certificate_arn
-
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.threatmod_target_group.arn
-#   }
-#   tags = {
-#     Name = "threatmod-alb-listener"
-#   }
-# }
-
-#fix this
 resource "aws_lb_listener" "threatmod_alb_listener_https" {
   load_balancer_arn = aws_lb.threatmod_application_load_balancer.arn
   port              = "443"
@@ -343,7 +316,6 @@ resource "aws_lb_listener" "threatmod_alb_listener_for_redirect_http_to_https" {
       port        = "443"
       protocol    = "HTTPS"
       status_code = "HTTP_301"
-      # this means that it permanently redirects the http to https and browser will cache it for next time
     }
   }
 
@@ -361,18 +333,7 @@ resource "aws_ecr_repository" "ecs_threat_composer_app" {
     scan_on_push = true
   }
 }
-# resource "aws_secretsmanager_secret" "my_secret" {
-#   name = "my-app-credentials"
-# }
 
-# resource "aws_secretsmanager_secret_version" "my_secret_version" {
-#   secret_id = aws_secretsmanager_secret.my_secret.id
-#   secret_string = jsonencode({
-#     ECR_REGISTRY   = var.ECR_REGISTRY
-#     ECR_REPOSITORY = var.ECR_REPOSITORY
-#     IMAGE_URI      = "${var.ECR_REGISTRY}/${var.ECR_REPOSITORY}:${var.container_image_tag}"
-#   })
-# }
 resource "aws_ecs_cluster" "threatmod_cluster" {
   name = "threatmod-cluster-main"
 
@@ -417,7 +378,7 @@ resource "aws_appautoscaling_policy" "ecs_cpu_policy" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    target_value       = 70 # keep CPU around 70% but if it reaches above then scaling will be triggered
+    target_value       = 70
     scale_in_cooldown  = 120
     scale_out_cooldown = 60
   }
@@ -469,7 +430,6 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
   desired_count    = 2
   launch_type      = "FARGATE"
   platform_version = "LATEST"
-  # Specific version = only needed in production
 
   tags = {
     Name        = "threatmod-cluster-service"
@@ -477,13 +437,11 @@ resource "aws_ecs_service" "threatmod_cluster_service" {
   }
 
   deployment_controller {
-    type = "ECS" # This means "Rolling Update"
+    type = "ECS"
   }
 
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
-  # 100% of desired tasks running
-  # Allow up to 200% during deployment (for rolling updates)
 
   deployment_circuit_breaker {
     enable   = true

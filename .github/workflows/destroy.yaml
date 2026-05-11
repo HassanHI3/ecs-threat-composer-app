@@ -43,17 +43,21 @@ jobs:
         working-directory: infra
         run: |
           terraform plan -destroy -var-file="dev.tfvars" -input=false \
-            -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
-            -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
-            -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+            --var="ECR_REGISTRY=${{ vars.ECR_REGISTRY }}" \
+            --var="task_role_arn=${{ vars.TASK_ROLE_ARN }}" \
+            --var="execution_role_arn=${{ vars.EXECUTION_ROLE_ARN }}" \
+            --var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            --var="cloudflare_zone_id=${{ vars.CLOUDFLARE_ZONE_ID }}"
 
       - name: Terraform Destroy
         working-directory: infra
         run: |
           terraform destroy -var-file="dev.tfvars" -auto-approve -input=false \
-            -var="ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}" \
-            -var="task_role_arn=${{ secrets.TASK_ROLE_ARN }}" \
-            -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
+            --var="ECR_REGISTRY=${{ vars.ECR_REGISTRY }}" \
+            --var="task_role_arn=${{ vars.TASK_ROLE_ARN }}" \
+            --var="execution_role_arn=${{ vars.EXECUTION_ROLE_ARN }}" \
+            --var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            --var="cloudflare_zone_id=${{ vars.CLOUDFLARE_ZONE_ID }}"
 
       - name: Destroy summary
         if: success()
