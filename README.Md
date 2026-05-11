@@ -2,15 +2,15 @@
 
 ## Overview
 
-This project demonstrates a fully automated, cloud-native CI/CD pipeline deployed on AWS using ECS Fargate, Docker, Terraform, and GitHub Actions.
+This project uses a cloud native web application with a fully automated CI/CD pipeline on AWS, built to demonstrate production grade deployment practices.
 
-The application is containerised using a multi-stage Docker build and deployed to AWS ECS Fargate, running behind an Application Load Balancer within a secure multi-AZ VPC architecture.
+The application is containerised using a multi-stage Docker build and runs on AWS ECS Fargate behind an Application Load Balancer, within a multi-AZ VPC architecture with segregated public and private subnets. Fargate was chosen over EC2 to remove the operational overhead of managing servers, with AWS handling provisioning, scaling, and patching of the underlying infrastructure.
 
-Infrastructure provisioning is fully automated using Terraform, enabling Infrastructure as Code (IaC) for consistent and repeatable deployments. Remote state is stored in S3 with native S3 state locking.
+Infrastructure is provisioned entirely through Terraform, following Infrastructure as Code principles for consistent, repeatable deployments across environments. Remote state is stored in S3 with native S3 state locking to prevent concurrent modifications.
 
-CI/CD automation is implemented using GitHub Actions with OIDC authentication (no static AWS credentials), where Docker images are built, tagged using the Git commit SHA, and pushed to Amazon ECR before being deployed to ECS.
+The CI/CD pipeline is implemented in GitHub Actions and authenticates to AWS via OIDC, eliminating the need for long-lived access credentials. On each push, the workflow builds the Docker image, tags it with the Git commit SHA for traceability, pushes it to Amazon ECR, and triggers a rolling deployment to ECS.
 
-ECS Fargate was chosen over EC2 to eliminate the need for server management, allowing AWS to handle scaling, provisioning, and underlying infrastructure automatically.
+The result is a reproducible, secure, and fully automated deployment pipeline requiring no manual intervention from commit to production.
 
 ---
 
