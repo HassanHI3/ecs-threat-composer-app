@@ -2,9 +2,11 @@ node_modules
 build
 .git
 .gitignore
-Dockerfile
-dockerfile
 README.md
 npm-debug.log
 yarn-error.log
+*.log
 .DS_Store
+.env
+.env.*
+coverage

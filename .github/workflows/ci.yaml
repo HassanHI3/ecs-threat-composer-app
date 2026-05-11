@@ -51,7 +51,7 @@ jobs:
           - name: Scan image with Grype
             uses: anchore/scan-action@v6
             with:
-              image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+              image: "${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}"
               fail-build: "true"
               severity-cutoff: high
               output-format: sarif
