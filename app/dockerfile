@@ -1,7 +1,7 @@
 
 # multistage docker build : builder stage
 
-FROM node:18 AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ RUN yarn build
 
 # multistage docker build : runtime
 
-FROM node:18-slim AS runtime
+FROM node:20-bookworm-slim AS runtime
 
 WORKDIR /app
 

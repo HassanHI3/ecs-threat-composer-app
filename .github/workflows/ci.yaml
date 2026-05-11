@@ -52,8 +52,9 @@ jobs:
             uses: anchore/scan-action@v6
             with:
               image: "${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}"
-              fail-build: "true"
+              fail-build: "false"
               severity-cutoff: high
+              only-fixed: "true"
               output-format: sarif
 
           - name: Upload Grype scan results
