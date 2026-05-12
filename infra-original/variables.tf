@@ -22,7 +22,6 @@ variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
 }
-
 variable "container_image" {
   description = "Full container image URI for the ECS task"
   type        = string
@@ -49,7 +48,6 @@ variable "execution_role_arn" {
   type        = string
   sensitive   = true
 }
-
 variable "ECR_REGISTRY" {
   description = "ECR registry URL"
   type        = string
@@ -61,31 +59,13 @@ variable "ECR_REPOSITORY" {
 }
 
 variable "cloudflare_api_token" {
-  description = "Cloudflare API token with permissions to manage DNS records"
+  description = "value of the Cloudflare API token with permissions to manage DNS records"
   type        = string
   sensitive   = true
 }
 
 variable "cloudflare_zone_id" {
-  description = "Cloudflare zone ID for the domain where DNS records will be managed"
+  description = "value of the Cloudflare zone ID for the domain where DNS records will be managed"
   type        = string
   sensitive   = true
-}
-
-variable "domain_name" {
-  description = "Primary domain name for the ACM certificate"
-  type        = string
-  default     = "threatmodapp.com"
-}
-
-variable "subject_alternative_names" {
-  description = "Additional SANs for the ACM certificate"
-  type        = list(string)
-  default     = ["tm.threatmodapp.com"]
-}
-
-variable "app_subdomain" {
-  description = "Subdomain to point at the ALB"
-  type        = string
-  default     = "tm"
 }
