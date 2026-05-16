@@ -286,8 +286,8 @@ terraform destroy -var-file="dev.tfvars"
 - IAM permissions scoped to required actions only
 - Secrets managed via GitHub Secrets, never committed to repo
 - ECR image scanning on push to detect vulnerabilities
-- Container runs as non-root user
-- Security groups follow least-privilege (ALB → ECS tasks only on app port)
+- Container runs as non root user
+- Security groups follow least privilege (ALB → ECS tasks only on app port)
 
 ---
 
