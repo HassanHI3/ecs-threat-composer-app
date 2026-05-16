@@ -1,16 +1,15 @@
-# ECS Fargate End-to-End CI/CD Deployment Project (Threat Composer)
+# ECS Fargate End-to-End CI/CD Deployment Project (Node.js app)
 
 ## Overview
 
-This project demonstrates a fully automated, cloud-native CI/CD pipeline deployed on AWS using ECS Fargate, Docker, Terraform, and GitHub Actions.
+This project demonstrates a fully automated, cloud-native CI/CD pipeline for a Node.js application, deployed on AWS using ECS Fargate, Docker, Terraform, and GitHub Actions.
+The Node.js application is containerised using a multi-stage Docker build — leveraging a Node.js base image to install dependencies, compile the build, and produce a lean production runtime image. It is deployed to AWS ECS Fargate, running behind an Application Load Balancer within a secure multi-AZ VPC architecture.
 
-The application is containerised using a multi-stage Docker build and deployed to AWS ECS Fargate, running behind an Application Load Balancer within a secure multi-AZ VPC architecture.
+Infrastructure provisioning is fully automated using Terraform, enabling Infrastructure as Code (IaC) for consistent and repeatable deployments. Remote state is stored in Amazon S3 with native S3 state locking.
 
-Infrastructure provisioning is fully automated using Terraform, enabling Infrastructure as Code (IaC) for consistent and repeatable deployments. Remote state is stored in S3 with native S3 state locking.
+CI/CD automation is implemented using GitHub Actions with OIDC authentication (no static AWS credentials). On each push, the pipeline installs Node.js dependencies, builds the application, and produces a Docker image that is tagged using the Git commit SHA and pushed to Amazon ECR before being deployed to ECS.
 
-CI/CD automation is implemented using GitHub Actions with OIDC authentication (no static AWS credentials), where Docker images are built, tagged using the Git commit SHA, and pushed to Amazon ECR before being deployed to ECS.
-
-ECS Fargate was chosen over EC2 to eliminate the need for server management, allowing AWS to handle scaling, provisioning, and underlying infrastructure automatically.
+ECS Fargate was chosen over EC2 to eliminate the need for server management, allowing AWS to handle scaling, provisioning, and the underlying infrastructure automatically — keeping the focus on delivering the Node.js application rather than maintaining hosts.
 
 ---
 
