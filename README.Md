@@ -85,7 +85,7 @@ Combined infrastructure and application deployment:
 
 **Job 1 — Terraform Apply:**
 - Runs `terraform fmt`, `validate`, `plan`
-- Applies infrastructure changes (VPC, ECS, ALB, ACM, Route53)
+- Applies infrastructure changes (VPC, ECS, ALB, ACM, ect)
 ![Terraform Apply](app/images/terraform-apply.png)
 
 **Job 2 — ECS Deploy:**
