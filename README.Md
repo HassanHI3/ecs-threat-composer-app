@@ -1,4 +1,4 @@
-# ECS Fargate End to End CI/CD Deployment Project (Node.js app)
+# ECS Fargate - End to End CI/CD Deployment Project (Node.js app)
 
 ## Overview
 
