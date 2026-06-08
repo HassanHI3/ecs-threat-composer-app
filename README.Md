@@ -289,8 +289,3 @@ terraform destroy -var-file="dev.tfvars"
 - Container runs as non root user
 - Security groups follow least privilege (ALB → ECS tasks only on app port)
 
----
-
-## Author
-
-Hassan Ibrahim
