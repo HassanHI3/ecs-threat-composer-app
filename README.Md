@@ -34,7 +34,6 @@ The architecture includes:
 - **Application Load Balancer** in public subnets handling HTTP→HTTPS redirect
 - **ECS Fargate tasks** running in private subnets for security
 - **ACM certificate** managed via Terraform for HTTPS
-- **Route53 hosted zone** for DNS records
 - **ECR repository** with vulnerability scanning enabled
 - **CloudWatch Logs** for ECS task logging
 - **Auto-scaling** based on CPU utilisation (2-4 tasks)
