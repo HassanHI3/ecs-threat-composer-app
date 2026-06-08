@@ -25,7 +25,7 @@ The application is accessible at: **https://tm.threatmodapp.com**
 ## Architecture
 
 <!-- SCREENSHOT: your architecture diagram (Lucidchart/draw.io/Mermaid export) -->
-!(app/images/ecs-diagram.png)
+![Architecture Diagram](app/images/ecs-diagram.png)
 
 The architecture includes:
 - **Custom VPC** with public and private subnets across two AZs (eu-west-2a, eu-west-2b)
