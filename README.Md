@@ -288,4 +288,5 @@ terraform destroy -var-file="dev.tfvars"
 - ECR image scanning on push to detect vulnerabilities
 - Container runs as non root user
 - Security groups follow least privilege (ALB → ECS tasks only on app port)
+---
 
