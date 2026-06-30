@@ -2,14 +2,15 @@
 
 ## Overview
 
-This project demonstrates a fully automated, cloud-native CI/CD pipeline for a Node.js application, deployed on AWS using ECS Fargate, Docker, Terraform, and GitHub Actions.
-The Node.js application is containerised using a multi-stage Docker build that is leveraging a Node.js base image to install dependencies, compile the build and produce a lean production runtime image. It is deployed to AWS ECS Fargate, running behind an Application Load Balancer within a secure multi-AZ VPC architecture.
+This project demonstrates an end to end deployment of a containerised Node.js application on AWS using Terraform, Docker, GitHub Actions and ECS Fargate.
 
-Infrastructure provisioning is fully automated using Terraform, enabling Infrastructure as Code (IaC) for consistent and repeatable deployments. Remote state is stored in Amazon S3 with native S3 state locking.
+The application is built using a multi stage Docker build, which keeps the production image lightweight by separating the build process from the runtime environment. It is deployed to Amazon ECS Fargate behind an Application Load Balancer within a secure multi AZ VPC.
 
-CI/CD automation is implemented using GitHub Actions with OIDC authentication (no static AWS credentials). On each push, the pipeline installs Node.js dependencies, builds the application, and produces a Docker image that is tagged using the Git commit SHA and pushed to Amazon ECR before being deployed to ECS.
+The AWS infrastructure is provisioned with Terraform, making it easy to create and manage the environment through Infrastructure as Code. Terraform state is stored remotely in Amazon S3 to ensure deployments remain consistent.
 
-ECS Fargate was chosen over EC2 to eliminate the need for server management, allowing AWS to handle scaling, provisioning, and the underlying infrastructure automatically keeping the focus on delivering the Node.js application rather than maintaining hosts.
+The CI/CD pipeline is automated with GitHub Actions using OIDC authentication, removing the need to store long lived AWS credentials. Every push installs the application dependencies, builds the project, creates a Docker image, tags it with the Git commit SHA, pushes it to Amazon ECR and deploys the latest version to ECS.
+
+I chose ECS Fargate because it removes the need to manage EC2 instances. AWS handles the underlying infrastructure, allowing me to focus on building, deploying and maintaining the application.
 
 ---
 
