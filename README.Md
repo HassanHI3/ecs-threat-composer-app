@@ -127,27 +127,27 @@ ecs-threat-composer-app/
 │   ├── .dockerignore
 │   └── ...
 │
-├── infra/                        # Terraform configuration
-│   ├── main.tf                   # Root module calls
-│   ├── variables.tf              # Root variables
-│   ├── outputs.tf                # Root outputs
-│   ├── provider.tf               # AWS provider + S3 backend
-│   ├── dev.tfvars                # Non-sensitive environment config
-│   ├── terraform.tfvars          # Auto-loaded variables
+├── infra/                        - Terraform configuration
+│   ├── main.tf                   - Root module calls
+│   ├── variables.tf              - Root variables
+│   ├── outputs.tf                - Root outputs
+│   ├── provider.tf               - AWS provider + S3 backend
+│   ├── dev.tfvars                - Non-sensitive environment config
+│   ├── terraform.tfvars          - Auto-loaded variables
 │   ├── .aws/
-│   │   └── task-definition.json  # ECS task definition template
+│   │   └── task-definition.json  - ECS task definition template
 │   └── modules/
-│       ├── vpc/                  # VPC, subnets, IGW, NAT, route tables
-│       ├── alb/                  # Load balancer, listeners, target group
-│       ├── ecr/                  # Container registry
-│       ├── ecs/                  # Cluster, service, task def, autoscaling
-│       └── acm/                  # SSL certificate + DNS validation
+│       ├── vpc/                  - VPC, subnets, IGW, NAT, route tables
+│       ├── alb/                  - Load balancer, listeners, target group
+│       ├── ecr/                  - Container registry
+│       ├── ecs/                  - Cluster, service, task def, autoscaling
+│       └── acm/                  - SSL certificate + DNS validation
 │
 ├── .github/
 │   └── workflows/
-│       ├── ci.yaml               # Build & push Docker image
-│       ├── deploy.yaml           # Terraform apply + ECS deploy
-│       └── destroy.yaml          # Terraform destroy (manual)
+│       ├── ci.yaml               - Build & push Docker image
+│       ├── deploy.yaml           - Terraform apply + ECS deploy
+│       └── destroy.yaml          - Terraform destroy (manual)
 │
 ├── .gitignore
 └── README.md
