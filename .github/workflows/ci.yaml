@@ -89,5 +89,3 @@ jobs:
 
               echo "### Image pushed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
               echo "**Image:** \`$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-
-              
