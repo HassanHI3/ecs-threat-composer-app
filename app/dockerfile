@@ -1,4 +1,4 @@
-# multistage docker build : builder stage
+# Multistage docker build : builder stage
 
 FROM node:20 AS builder
 
@@ -11,7 +11,7 @@ COPY . .
 
 RUN yarn build
 
-# multistage docker build : runtime
+# Multistage docker build : runtime
 
 FROM node:20-bookworm-slim AS runtime
 
