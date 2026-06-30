@@ -4,13 +4,13 @@
 
 This project demonstrates an end to end deployment of a containerised Node.js application on AWS using Terraform, Docker, GitHub Actions and ECS Fargate.
 
+I chose ECS Fargate because it removes the need to manage EC2 instances. AWS handles the underlying infrastructure, allowing me to focus on building, deploying and maintaining the application.
+
 The application is built using a multi stage Docker build, which keeps the production image lightweight by separating the build process from the runtime environment. It is deployed to Amazon ECS Fargate behind an Application Load Balancer within a secure multi AZ VPC.
 
 The AWS infrastructure is provisioned with Terraform, making it easy to create and manage the environment through Infrastructure as Code. Terraform state is stored remotely in Amazon S3 to ensure deployments remain consistent.
 
 The CI/CD pipeline is automated with GitHub Actions using OIDC authentication, removing the need to store long lived AWS credentials. Every push installs the application dependencies, builds the project, creates a Docker image, tags it with the Git commit SHA, pushes it to Amazon ECR and deploys the latest version to ECS.
-
-I chose ECS Fargate because it removes the need to manage EC2 instances. AWS handles the underlying infrastructure, allowing me to focus on building, deploying and maintaining the application.
 
 ---
 
